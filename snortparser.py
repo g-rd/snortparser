@@ -17,20 +17,6 @@ class Parser(object):
     '''
 
     def __init__(self, rule=None):
-        """
-        >>> from snortparser import Parser
-        >>> rule = ("alert tcp $HOME_NET 2589 -> $EXTERNAL_NET "
-                "any (msg:\"MALWARE-BACKDOOR - Dagger_1.4.0\"; "
-                "flow:to_client,established; "
-                "content:\"2|00 00 00 06 00 00 00|Drives|24 00|\"; "
-                "depth:16; metadata:ruleset community; "
-                "classtype:misc-activity; sid:105; rev:14;)")
-        >>> parsed.header
-        OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', \
-(True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), \
-('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
-
-    """
         if rule:
             self.dicts = Dicts()
             self.rule = rule
@@ -353,6 +339,22 @@ class Parser(object):
         return options[1]
 
     def parse_header(self):
+        """
+        >>> from snortparser import Parser
+        >>> rule = ('alert tcp $HOME_NET any -> !$EXTERNAL_NET  \
+any (msg:\"MALWARE-BACKDOOR - Dagger_1.4.0\"; \
+flow:to_client,established; \
+content:\"2|00 00 00 06 00 00 00|Drives|24 00|\"; \
+depth:16; metadata:ruleset community; \
+classtype:misc-activity; sid:105; rev:14;)')
+        >>> parsed = Parser(rule)
+        >>> parsed.header
+        OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', \
+(True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), \
+('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
+
+    """
+
         if self.get_header():
             header = self.get_header()
             if re.search(r"[,\[\]]\s", header):
@@ -416,10 +418,6 @@ class Parser(object):
         return header_dict
 
     def parse_options(self, rule=None):
-        """
-        >>> parsed = parser()
-        >>> parsed.parse_options(rule)
-        """
         # TODO:
         # 1. preprocesor checks
         # 2. output modules checks
@@ -487,3 +485,10 @@ class Parser(object):
                     message = "unrecognized option: %s" % option
                     raise ValueError(message)
         return options
+
+
+if __name__ == "__main__":
+
+    import doctest
+
+    doctest.testmod()
