@@ -17,16 +17,16 @@ class Parser(object):
     '''
 
     def __init__(self, rule=None):
-    """
-    >>> from snortparser import Parser
-    >>> rule = ("alert tcp $HOME_NET 2589 -> $EXTERNAL_NET "
+        """
+        >>> from snortparser import Parser
+        >>> rule = ("alert tcp $HOME_NET 2589 -> $EXTERNAL_NET "
                 "any (msg:\"MALWARE-BACKDOOR - Dagger_1.4.0\"; "
                 "flow:to_client,established; "
                 "content:\"2|00 00 00 06 00 00 00|Drives|24 00|\"; "
                 "depth:16; metadata:ruleset community; "
                 "classtype:misc-activity; sid:105; rev:14;)")
-    >>> parsed.header
-    OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', \
+        >>> parsed.header
+        OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', \
 (True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), \
 ('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
 
