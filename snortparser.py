@@ -425,7 +425,18 @@ classtype:misc-activity; sid:105; rev:14;)')
             self.rule = rule
         options_dict = collections.OrderedDict()
         opts = self.get_options()
-        options = opts.split(';')
+        _pcre_opt = False
+        if re.search(r'(;\s+pcre:\s+".*";)', opts):
+            _pcre_opt = True
+
+        if _pcre_opt:
+            _pcre = re.split(r';(\s+pcre:\s+".*");', opts)
+            options_l = _pcre[0].split(';')
+            options_l.append(_pcre[1])
+            options_r = _pcre[2].split(';')
+            options = options_l + options_r
+        else:
+            options = opts.split(';')
         options = filter(None, options)
         if options[-1].lstrip().rstrip() == ")":
             options.pop()
