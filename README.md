@@ -6,14 +6,16 @@ The parser class accepts a snort rule as input and returnes a dictionary that co
 #> from snortparser import Parser
 
 #> rule = ('alert tcp $HOME_NET any -> !$EXTERNAL_NET any (msg:\"MALWARE-BACKDOOR - Dagger_1.4.0\"; flow:to_client,established; content:\"2|00 00 00 06 00 00 00|Drives|24 00|\"; depth:16; metadata:ruleset community; classtype:misc-activity; sid:105; rev:14;)')
->>> parsed = Parser(rule)
+#> parsed = Parser(rule)
 
 "Header"
 #> parsed.header
+
 OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', (True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), ('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
 
 "Options"
 #> parsed.options
+
 OrderedDict([(0, {'msg': ['"MALWARE-BACKDOOR - Dagger_1.4.0"']}), (1, {'flow': ['to_client', 'established']}), (2, {'content': ['"2|00 00 00 06 00 00 00|Drives|24 00|"']}), (3, {'depth': ['16']}), (4, {'metadata': ['ruleset community']}), (5, {'classtype': ['misc-activity']}), (6, {'sid': ['105']}), (7, {'rev': ['14']})])
 
 NOTE: if the parser is unable to parse the rule, it will return a ValueError with the invalid rule item. Additionally, it does not care about misplaced spaces in the headers ip and port definitions like: "  alert tcp ![ 127.0.0.1, !8.8.8.8 ]  any --> ". This i by design, since I am not sure if snort cares about header syntax that much.
