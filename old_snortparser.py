@@ -68,51 +68,42 @@ class Parser(object):
             msg = "Unsupported Protocol %s " % proto
             raise ValueError(msg)
 
-    def __ip_to_tuple(self, ip):
-        if re.match(r"!", ip):
-            ip = ip.lstrip("!")
-            return (False, ip)
-        else:
-            return (True, ip)
+    def _ip_list(self, iplist):
+        # returns a list of tuples with
+        # correct truth table mark
+        if isinstance(iplist, list):
+            ip_tested = []
+            ip_not = None
+            for ip in iplist:
 
-    def __form_ip_list(self, ip_list):
-        ip_list = ip_list.split(",")
-        ips = []
-        for ip in ip_list:
-            ips.append(self.__ip_to_tuple(ip))
-        return ips
-
-    def __flatten_ip(self, ip):
-        list_deny = True
-        if re.match("^!", ip):
-            list_deny = False
-            ip = ip.strip("!")
-        _ip_list = []
-        _not_nest = True
-        ip = re.sub(r'^\[|\]$', '', ip)
-        ip = re.sub(r'"', '', ip)
-        if re.search(r"(\[.*\])", ip):
-            _not_nest = False
-            nest = re.split(r",(!?\[.*\])", ip)
-            nest = filter(None, nest)
-            # unnest from _ip_list
-            _return_ips = []
-            for item in nest:
-                if re.match(r"^\[|^!\[", item):
-                    nested = self.__flatten_ip(item)
-                    _return_ips.append(nested)
-                    continue
+                if re.match("^!", ip):
+                    ip_not = False
+                    ip = ip.strip("!")
                 else:
-                    _ip_list = self. __form_ip_list(item)
-                    for _ip in _ip_list:
-                        _return_ips.append(_ip)
-            return (list_deny, _return_ips)
-        if _not_nest:
-            _ip_list = self. __form_ip_list(ip)
-            return (list_deny, _ip_list)
+                    ip_not = True
 
-    def __validate_ip(self, ips):
-        utils = Utils()
+                if isinstance(ip, list):
+                    continue
+
+                if not self.dicts.ip_variables(ip):
+                    test_ip = self.utils.valid_ip(ip)
+                    if test_ip:
+                        ip = (ip_not, ip)
+                        ip_tested.append(ip)
+                elif self.dicts.ip_variables(ip):
+                    ip_tested.append(ip)
+                else:
+                    msg = "Invalid ip %s" % ip
+                    raise ValueError(msg)
+
+            ip = ip_tested
+            return ip
+        else:
+            return False
+
+    def ip(self, ip):
+        print "got input %s" % ip
+        ifnot = None
         variables = {"$EXTERNAL_NET": "$EXTERNAL_NET",
                      "$HTTP_SERVERS": "$HTTP_SERVERS",
                      "$INTERNAL_NET": "$INTERNAL_NET",
@@ -123,39 +114,107 @@ class Parser(object):
                      "HOME_NET": "HOME_NET",
                      "any": "any"}
 
-        # deny_flag = None
-        for item in ips:
-            if isinstance(item, bool):
-                pass
-                # deny_flag = item
-            if isinstance(item, list):
-                for ip in item:
-                    ip = self.__validate_ip(ip)
-                    if isinstance(ip, list):
-                        ip = self.__validate_ip(ip)
-            if isinstance(item, basestring):
-                    if item in variables:
-                        pass
-                    elif utils.valid_ip(item):
-                        pass
+        # notip is the source marked as not
+        if re.match("^!", ip):
+            ifnot = False
+            ip = ip.strip("!")
+        else:
+            ifnot = True
+
+        # is the source described as a list of ips
+        # if it is, then make it a list from the string
+
+        ip_list = False
+        if re.match("^\[", ip):
+            ip_list = True
+            print "list %s" % ip
+
+        # Snort allows for nesting of lists
+        # oh snap, will this horror not end ?!!!
+        # customer: "Can I have 3 lists in one snort ip list?"
+        # Rick: "Best I can do is 2"
+        # Not to forget! these are actually strings!
+
+        # nested and true
+        if ip_list:
+            ip = re.sub(r'^\[|\]$', '', ip)
+            ip = re.sub(r'"', '', ip)
+            ips = []
+            print "1: %s" % ip
+            _nest_list = False
+            if re.search(",\[", ip):
+                _nest_list = True
+            else:
+                snort_ip_list = ip.split(',')
+                for sip in snort_ip_list:
+                    print "sip: %s" % sip
+                    ip = self.ip(sip)
+                    print "returned sip: %s" % str(ip)
+                    ips.append(ip)
+            if _nest_list:
+                ip = re.sub(r',\[', ';[', ip)
+                nests = ip.split(";")
+                for li in nests:
+                    li = li.lstrip("[").rstrip("]")
+                    li = li.split(",")
+                    ip = self._ip_list(li)
+                    if re.match("^\[", li):
+                        li = li.lstrip("[").rstrip("]")
+                        li = li.split(",")
+                        ip = self._ip_list(li)
+                        ips.append((True, ip))
                     else:
-                        raise ValueError("Unknown ip or variable %s" % item)
-        return True
+                        li = li.split(",")
+                        ip = self._ip_list(li)
+                        for item in ip:
+                            ips.append(item)
 
-    def ip(self, ip):
+            # nested and denied
+            print "bumbumbun %s" % str(ip)
+            if re.search(",!\[", ip):
+                ip = re.sub(r',\!\[', ';![', ip)
+                nests = ip.split(";")
+                for li in nests:
+                    li_not = True
+                    if re.match("^!\[", li):
+                        li = li.lstrip("!")
+                        li_not = False
+                    if re.match("^\[", li):
+                        li = li.lstrip("[").rstrip("]")
+                        li = li.split(",")
+                        ip = self._ip_list(li)
+                        ips.append((li_not, ip))
+                    else:
+                        li = li.split(",")
+                        ip = self._ip_list(li)
+                        for item in ip:
+                            ips.append(item)
 
-        if isinstance(ip, basestring):
-            ip = ip.strip('"')
-            if re.search(r",", ip):
-                item = self.__flatten_ip(ip)
-                ip = item
-            else:
-                ip = self.__ip_to_tuple(ip)
-            valid = self.__validate_ip(ip)
-            if valid:
-                return ip
-            else:
-                raise ValueError("Unvalid ip or variable: %s" % ip)
+            # list of ips, but not nested, both denied and true
+            if isinstance(ip, basestring) and re.search("^\d.*|^!\d.*", ip):
+                print "basestring numbered %s" % ip
+                ip = ip.split(",")
+                ip = self._ip_list(ip)
+                for item in ip:
+                    ips.append(item)
+
+            return (ifnot, ips)
+
+        # ip as a string
+        ip_test = self.utils.valid_ip(ip)
+        if ip_test:
+            return (ifnot, ip)
+
+        print "is variable? %s" % repr(ip)
+        print [ord(c) for c in ip]
+        print [ord(c) for c in variables["$HOME_NET"]]
+        print variables.keys()
+        if ip in variables.keys():
+            print "yes it is"
+            return (ifnot, ip)
+        else:
+            msg = "Invalid ip or variable %s" % ip
+            raise ValueError(msg)
 
     def port(self, port):
         ifnot = None
@@ -351,12 +410,8 @@ classtype:misc-activity; sid:105; rev:14;)')
                         raise ValueError(perror)
 
                 if "source" not in header_dict:
-                    try:
-                        src_ip = self.ip(item)
-                        header_dict["source"] = src_ip
-                        continue
-                    except Exception as serror:
-                        raise ValueError(serror)
+                    src_ip = self.ip(item)
+                    header_dict["source"] = src_ip
 
                 if "src_port" not in header_dict:
                     src_port = self.port(item)
