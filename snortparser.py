@@ -386,7 +386,6 @@ classtype:misc-activity; sid:105; rev:14;)')
         # 2. output modules checks
         if rule:
             self.rule = rule
-        options_dict = collections.OrderedDict()
         opts = self.get_options()
         _pcre_opt = False
         if re.search(r'(;\s+pcre:\s+".*";)', opts):
@@ -407,8 +406,9 @@ classtype:misc-activity; sid:105; rev:14;)')
             raise ValueError("Snort rule options is not closed properly, "
                              "you have a syntax error")
 
+        options_dict = collections.OrderedDict()
         for index, option in enumerate(options):
-            try:
+            if ':' in option:
                 split_option = option.split(":", 1)
                 for place, item in enumerate(split_option):
                     item = item.lstrip().rstrip()
@@ -421,8 +421,9 @@ classtype:misc-activity; sid:105; rev:14;)')
                 else:
                     option_dict[split_option[0]] = None
                 options_dict[index] = option_dict
-            except:
-                option = option.lstrip().rstrip()
+
+            else:
+                options_dict[index] = {"modifier":[option.lstrip().rstrip()]}
         return options_dict
 
     def validate_options(self, options):
@@ -431,10 +432,10 @@ classtype:misc-activity; sid:105; rev:14;)')
             opt = False
             for key, value in option_dict.iteritems():
                 option = key
-                content_mod = self.dicts.content_modifiers(option)
+                content_mod = self.dicts.content_modifiers(value[0])
                 if content_mod:
                     # An unfinished feature
-                    pass
+                    continue
                 gen_option = self.dicts.options(option)
                 if gen_option:
                     opt = True
@@ -459,6 +460,68 @@ classtype:misc-activity; sid:105; rev:14;)')
                     message = "unrecognized option: %s" % option
                     raise ValueError(message)
         return options
+
+
+class FlattenRule(object):
+
+    def __init__(self, rule):
+        self.rule = rule
+
+    def __getitem__(self):
+        return self.flatten_rule()
+
+    # (True, [(True, 80), (False, 443)])
+    def flatten_header_item(self, item):
+        item_str = ''
+        in_list = False
+        if isinstance(item[1], list):
+            item_str = '['
+            in_list = True
+            for tup in item[1]:
+                tup = self.flatten_header_item(tup)
+                item_str = item_str + tup + ','
+            item_str = item_str.rstrip(',') + ']'
+            if not item[0]:
+                item_str = '!' + item_str
+        if isinstance(item, tuple) and not in_list:
+            if item[0]:
+                item_str = item_str + item[1]
+            else:
+                item_str = '!' + item_str + item[1]
+        if isinstance(item, basestring):
+            item_str = item_str + str(item)
+        return item_str
+
+    def flatten_header(self, header):
+        header_raw = ''
+        for key, value in header.iteritems():
+            flat = self.flatten_header_item(value)
+            header_raw = header_raw + flat + ' '
+        return header_raw
+
+    def flatten_options(self, options):
+        options_list = []
+        for index, value in options.iteritems():
+            key = value.keys()[0]
+            if 'modifier' not in key:
+                value = key, ','.join(str(e) for e in value[key])
+                value = ':'.join(str(e) for e in value)
+            else:
+                value = value[key][0]
+            options_list.append(value)
+
+        options_flat = '; '.join(str(e) for e in options_list)
+        options_raw = '(' + options_flat + ';)'
+        return options_raw
+
+    def get_rule(self):
+        header = self.rule['header']
+        options = self.rule['options']
+        flat_header = self.flatten_header(header)
+        flat_options = self.flatten_options(options)
+        flat_rule = flat_header + flat_options
+
+        return flat_rule  
 
 
 if __name__ == "__main__":
