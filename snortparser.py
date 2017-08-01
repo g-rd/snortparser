@@ -502,15 +502,16 @@ class Sanitizer(object):
             return depth
 
 
-    def sanitize(self, rule):
-        options = rule['options']
+    def sanitize(self, parsed):
+        options = parsed['options']
         for idx in options:
             key = options[idx].keys()[0]
             opt = options[idx]
             if key in self.methods:
                value = self.methods[key](options)
                options[idx][key] = [value]
-        return options
+        parsed['options'] = options
+        return parsed
 
 
 class FlattenRule(object):
