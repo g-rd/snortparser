@@ -388,11 +388,13 @@ classtype:misc-activity; sid:105; rev:14;)')
             self.rule = rule
         opts = self.get_options()
         _pcre_opt = False
-        if re.search(r'(;\s+pcre:\s+".*";)', opts):
+        #if re.search(r'(;\s+pcre:\s+".*";)', opts):
+        if re.search(r'(;\s+pcre:\s+".*";|;\s+pcre:".*";)', opts):
             _pcre_opt = True
 
         if _pcre_opt:
-            _pcre = re.split(r';(\s+pcre:\s+".*");', opts)
+            #_pcre = re.split(r';(\s+pcre:\s+".*");', opts)
+            _pcre = re.split(r';(\s+pcre:\s+".*"|\s+pcre:".*");', opts)
             options_l = _pcre[0].split(';')
             options_l.append(_pcre[1])
             options_r = _pcre[2].split(';')
@@ -431,35 +433,95 @@ classtype:misc-activity; sid:105; rev:14;)')
             option_dict = value
             opt = False
             for key, value in option_dict.iteritems():
-                option = key
                 content_mod = self.dicts.content_modifiers(value[0])
                 if content_mod:
                     # An unfinished feature
                     continue
-                gen_option = self.dicts.options(option)
+                gen_option = self.dicts.options(key)
                 if gen_option:
                     opt = True
                     continue
-                pay_option = self.dicts.options(option)
+                pay_option = self.dicts.options(key)
                 if pay_option:
                     opt = True
                     continue
-                non_pay_option = self.dicts.options(option)
+                non_pay_option = self.dicts.options(key)
                 if non_pay_option:
                     opt = True
                     continue
-                post_detect = self.dicts.options(option)
+                post_detect = self.dicts.options(key)
                 if post_detect:
                     opt = True
                     continue
-                threshold = self.dicts.options(option)
+                threshold = self.dicts.options(key)
                 if threshold:
                     opt = True
                     continue
                 if not opt:
-                    message = "unrecognized option: %s" % option
+                    message = "unrecognized option: %s" % key
                     raise ValueError(message)
         return options
+
+class Sanitizer(object):
+    def __init__(self):
+        self.methods = {
+                "pcre": self.pcre,
+                "depth": self.depth
+                }
+
+    def pcre(self, options):
+        pcre_idx = [idx for idx in options if options[idx].has_key("pcre")][0]
+        value = options[pcre_idx]["pcre"]
+        if isinstance(value, list):
+            value = value[0]
+        if re.match(r'^"/.*/"$', value):
+            print True
+        else:
+            if not re.match(r'^("\/)', value):
+                start = re.split(r'^"', value)
+                start[0] = '"/'
+                value = ''.join(start)
+            if not re.search(r'(\/")$', value):
+                end = re.split(r'"$', value)
+                end[-1] = '/"'
+                value = ''.join(end)
+            return value
+
+    def depth(self, options):
+        depth_idx = [idx for idx in options if options[idx].has_key("depth")][0]
+        dsize_idx = [idx for idx in options if options[idx].has_key("dsize")][0]
+        depth = options[depth_idx].get("depth")[0]
+        dsize = options[dsize_idx].get("dsize")[0]
+        full_dsize = re.split(r'[0-9]+', dsize)
+        operand = [x for x in full_dsize if x]
+        dsize = dsize.strip(operand[0])
+        if int(depth) < int(dsize):
+            print dsize
+            return dsize
+        else:
+            return depth
+
+
+    def sanitize(self, rule):
+        options = rule['options']
+        for idx in options:
+            key = options[idx].keys()[0]
+            opt = options[idx]
+            if key in self.methods:
+               value = self.methods[key](options)
+               options[idx][key] = [value]
+               print options[idx][key]
+
+        print options
+
+            #for key in options[idx]:
+            #    opt = options[idx]
+            #    try:
+            #        value = self.methods[key](opt[key])
+            #        options[idx][key] = [value]
+            #        print options[idx]
+            #    except:
+            #        continue
 
 
 class FlattenRule(object):

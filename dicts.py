@@ -1,5 +1,52 @@
 class Dicts():
 
+    def classtypes(self, cltype):
+        classtypes = {
+                "attempted-admin":"Attempted Administrator Privilege Gain",
+                "attempted-dos":"Attempted Denial of Service",
+                "attempted-recon":"Attempted Information Leak",
+                "attempted-user":"Attempted User Privilege Gain",
+                "bad-unknown":"Potentially Bad Traffic",
+                "client-side-exploit":"Known client side exploit attempt",
+                "default-login-attempt":"Attempt to Login By a Default Username and Password",
+                "denial-of-service":"Detection of a Denial of Service Attack",
+                "file-format":"Known malicious file or file based exploit",
+                "icmp-event":"Generic ICMP Event",
+                "inappropriate-content":"Inappropriate content was detected",
+                "malware-cnc":"Known malware command and control traffic",
+                "misc-activity":"Misc Activity",
+                "misc-attack":"Misc Attack",
+                "network-scan":"Detection of a Network Scan",
+                "non-standard-protocol":"Detection of a Non-Standard Protocol or Event",
+                "not-suspicious":"Not Suspicious Traffic",
+                "policy-violation":"Potential Corporate Policy Violation",
+                "protocol-command-decode":"Generic Protocol Command Decode",
+                "rpc-portmap-decode":" Decode of an RPC Query",
+                "sdf":"Sensitive Data",
+                "shellcode-detect":"Executable Code was Detected",
+                "string-detect":"A Suspicious String was Detected",
+                "successful-admin":"Successful Administrator Privilege Gain",
+                "successful-dos":"Denial of Service",
+                "successful-recon-largescale":"Large Scale Information Leak",
+                "successful-recon-limited":"Information Leak",
+                "successful-user":"Successful User Privilege Gain",
+                "suspicious-filename-detect":"A Suspicious Filename was Detected",
+                "suspicious-login":"An Attempted Login Using a Suspicious Username was Detected",
+                "system-call-detect":"A System Call was Detected",
+                "tcp-connection":"A TCP Connection was Detected",
+                "trojan-activity":"A Network Trojan was Detected",
+                "unknown":"Unknown Traffic",
+                "unsuccessful-user":"Unsuccessful User Privilege Gain",
+                "unusual-client-port-connection":"A Client was Using an Unusual Port",
+                "web-application-activity":"Access to a Potentially Vulnerable Web Application",
+                "web-application-attack":"Web Application Attack",
+                "nonstd-tcp":"Detection of a Non-Standard TCP Protocol"
+                }
+        if cltype in classtypes:
+            return classtypes[cltype]
+        else:
+            return False
+
     def ip_variables(self, variable):
         variables = {"$EXTERNAL_NET": "$EXTERNAL_NET",
                      "$HTTP_SERVERS": "$HTTP_SERVERS",
@@ -1155,6 +1202,7 @@ class Dicts():
                        # if the rule otherwise matches more than the
                        # configured rate it will fire.
                        }
+
 
         # TODO: add threshold types ex: threshold:
         # type limit <<, but for now, this will have to suffice

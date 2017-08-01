@@ -9,24 +9,25 @@ class Utils():
         rex = re.compile(r'^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}){1}$|'
                          '^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{1,2})$')
         if not re.match(rex, ip):
+            print "error"
             return ValueError("Not an ipv4 IP")
         if "/" in ip:
             iprange = ip.split("/")
             ip = iprange[0]
             subnet_start = ip.split(".")
             size = iprange[-1]
-            if int(subnet_start[-1]) > 0 and int(size) < 32:
-                return ValueError("subnet start is not correct")
             try:
                 int(size)
             except:
                 return ValueError("not int")
+            if int(subnet_start[-1]) > 0 and (int(size) > 32 or int(size) < 0):
+                return ValueError("subnet start is not correct")
             if int(size) > 32 or int(size) < 0:
                 return ValueError("out of range")
-
         try:
             socket.inet_pton(socket.AF_INET, ip)
         except socket.error as e:
+            print "error"
             return ValueError(e)
         else:
             return True
