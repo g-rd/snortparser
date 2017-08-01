@@ -510,18 +510,7 @@ class Sanitizer(object):
             if key in self.methods:
                value = self.methods[key](options)
                options[idx][key] = [value]
-               print options[idx][key]
-
-        print options
-
-            #for key in options[idx]:
-            #    opt = options[idx]
-            #    try:
-            #        value = self.methods[key](opt[key])
-            #        options[idx][key] = [value]
-            #        print options[idx]
-            #    except:
-            #        continue
+        return options
 
 
 class FlattenRule(object):
