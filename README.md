@@ -22,7 +22,6 @@ NOTE: if the parser is unable to parse the rule, it will return a ValueError wit
 
 Also, keep in mind, that I have never used snort myself, nor do I know what the best practices are, this tool is written for a project and entierly based on snort documentatin.
 
-I will update the code with few more features in the future, for example there is no code for snort preprocessor checks and I also want to write some checks to go over the rule efficiency and if it makes sense or not, basically, to go over the Notes: for every option in the snort documentation.
 
 I hope this code is useful for someone.
 
