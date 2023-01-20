@@ -30,7 +30,7 @@ class Parser(object):
         yield self.data
 
     def __getitem__(self, key):
-        if key is "all":
+        if key == "all":
             return self.data
         else:
             return self.data[key]
@@ -413,7 +413,7 @@ class Parser(object):
             if ":" in option_string:
                 option = option_string.split(":", 1)
                 key, value = option
-                if key is not "pcre":
+                if key != "pcre":
                     value = value.split(",")
                 options_dict[index] = (key, value)
             else:
