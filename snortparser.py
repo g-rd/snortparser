@@ -11,10 +11,8 @@ except ImportError:
 
 class Parser(object):
     """
-    this will take an array of lines and parse it and hand
-    back a dictionary
-    NOTE: if you pass an invalid rule to the parser,
-    it will a raise ValueError.
+    This will take an array of lines and parse it and hand back a dictionary
+    NOTE: if you pass an invalid rule to the parser, it will a raise ValueError.
     """
 
     def __init__(self, rule):
@@ -51,8 +49,7 @@ class Parser(object):
         if action in actions:
             return action
         else:
-            msg = "Invalid action specified %s" % action
-            raise ValueError(msg)
+            raise ValueError(f"Invalid action specified {action}")
 
     @staticmethod
     def proto(proto: str) -> str:
@@ -61,8 +58,7 @@ class Parser(object):
         if proto.lower() in protos:
             return proto
         else:
-            msg = "Unsupported Protocol %s " % proto
-            raise ValueError(msg)
+            raise ValueError(f"Unsupported Protocol {proto}")
 
     @staticmethod
     def __ip_to_tuple(ip: str) -> Tuple:
@@ -151,7 +147,7 @@ class Parser(object):
             if valid:
                 return ip
             else:
-                raise ValueError("Invalid ip or variable: %s" % ip)
+                raise ValueError(f"Invalid ip or variable: {ip}")
 
     @staticmethod
     def port(port):
@@ -248,7 +244,6 @@ class Parser(object):
                 return if_not, port
 
             if re.search(":", port):
-                message = "Port is out of range %s" % port
                 ports = port.split(":")
                 for portl in ports:
                     portl.lstrip("!")
@@ -256,20 +251,18 @@ class Parser(object):
                         continue
                     if portl or portl.lower() in variables:
                         continue
+
                     try:
                         portl = int(portl)
-
                     except ValueError:
-                        raise ValueError(message)
+                        raise ValueError(f"Port is not an int: {port}")
+
                     if portl < 0 or portl > 65535:
-                        raise ValueError(message)
+                        raise ValueError(f"Port is out of range: {port}")
 
                 return if_not, port
 
-            """
-            Parsing a single port
-            single port accepts denial.
-            """
+            # Parsing a single port single port accepts denial.
             try:
                 if not int(port) > 65535 or int(port) < 0:
                     return if_not, port
@@ -278,11 +271,9 @@ class Parser(object):
                     raise ValueError
 
             except Exception:
-                msg = 'Unknown port: "%s" ' % port
-                raise ValueError(msg)
+                raise ValueError(f"Unknown port: {port}")
         else:
-            message = 'Unknown port "%s"' % port
-            raise ValueError(message)
+            raise ValueError(f"Unknown port {port}")
 
     def destination(self, dst):
         destinations = {"->": "to_dst", "<>": "bi_direct"}
@@ -290,18 +281,14 @@ class Parser(object):
         if dst in destinations:
             return dst
         else:
-            msg = "Invalid destination variable %s" % dst
-            raise ValueError(msg)
+            raise ValueError(f"Invalid destination variable {dst}")
 
     def get_header(self):
         if re.match(r"(^[a-z|A-Z].+?)?(\(.+;\)|;\s\))", self.rule.lstrip()):
             header = self.rule.split("(", 1)
             return header[0]
         else:
-            msg = (
-                "Error in syntax, check if rule"
-                "has been closed properly %s " % self.rule
-            )
+            msg = f"Error in syntax, check if rule has been closed properly {self.rule}"
             raise SyntaxError(msg)
 
     @staticmethod
@@ -311,9 +298,8 @@ class Parser(object):
     def get_options(self):
         options = "{}".format(self.rule.split("(", 1)[-1].lstrip().rstrip())
         if not options.endswith(")"):
-            raise ValueError(
-                "Snort rule options is not closed properly, " "you have a syntax error"
-            )
+            msg = "Snort rule options is not closed properly, you have a syntax error"
+            raise ValueError(msg)
 
         op_list = list()
 
@@ -351,6 +337,7 @@ class Parser(object):
             header = header.split()
         else:
             raise ValueError("Header is missing, or unparsable")
+
         # get rid of empty list elements
         header = list(filter(None, header))
         header_dict = collections.OrderedDict()
