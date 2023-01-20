@@ -117,7 +117,8 @@ class Parser(object):
             "$SMTP_SERVERS",
             "$DNS_SERVERS",
             "$HOME_NET",
-            "HOME_NET",
+            "$TELNET_SERVERS",
+            "$SIP_SERVERS",
             "any",
         }
 

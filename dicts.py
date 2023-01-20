@@ -97,7 +97,7 @@ class Dicts:
             "priority",
             # The priority keyword assigns a severity level to
             # rules. "priority": "priority",
-            "metadata"
+            "metadata",
             # The metadata keyword allows a rule writer
             # to embed additional  information about the rule,
             # typically in a key-value format.  Keys: engine
@@ -105,6 +105,11 @@ class Dicts:
             # soid ( Shared Library Rule Generator and
             # SID ) ex: "gid|sid", service ( Target-Based
             # Service Identifier ) ex: "http"
+            #
+            #
+            # TODO: figure out what these are
+            "service",
+            "bufferlen",
         }
 
         if option:
