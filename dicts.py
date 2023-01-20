@@ -50,24 +50,6 @@ class Dicts:
             return False
 
     @staticmethod
-    def ip_variables(variable):
-        variables = {
-            "$EXTERNAL_NET": "$EXTERNAL_NET",
-            "$HTTP_SERVERS": "$HTTP_SERVERS",
-            "$INTERNAL_NET": "$INTERNAL_NET",
-            "$SQL_SERVERS": "$SQL_SERVERS",
-            "$SMTP_SERVERS": "$SMTP_SERVERS",
-            "$DNS_SERVERS": "$DNS_SERVERS",
-            "$HOME_NET": "$HOME_NET",
-            "any": "any",
-        }
-
-        if variable in variables:
-            return variables[variable]
-        else:
-            return False
-
-    @staticmethod
     def general_options(option: str = None) -> Any:
         # TODO: maybe add Snort Default Classifications
         general_options = {

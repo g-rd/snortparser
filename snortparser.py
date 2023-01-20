@@ -151,7 +151,7 @@ class Parser(object):
             if valid:
                 return ip
             else:
-                raise ValueError("Unvalid ip or variable: %s" % ip)
+                raise ValueError("Invalid ip or variable: %s" % ip)
 
     @staticmethod
     def port(port):
@@ -200,7 +200,7 @@ class Parser(object):
 
                         try:
                             prt = int(prt)
-                        except:
+                        except Exception:
                             raise ValueError(message)
 
                         if prt < 0 or prt > 65535:
@@ -214,7 +214,7 @@ class Parser(object):
                         try:
                             a = int(items[-1])
                             b = int(items[0])
-                        except:
+                        except Exception:
                             raise ValueError(message)
                         if a - b < 0:
                             raise ValueError(message)
@@ -277,7 +277,7 @@ class Parser(object):
                 if int(port) > 65535 or int(port) < 0:
                     raise ValueError
 
-            except:
+            except Exception:
                 msg = 'Unknown port: "%s" ' % port
                 raise ValueError(msg)
         else:
@@ -339,8 +339,7 @@ class Parser(object):
         OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', \
         (True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), \
         ('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
-
-            """
+        """
 
         if self.get_header():
             header = self.get_header()
