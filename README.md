@@ -1,28 +1,23 @@
 # snortparser
-Snort rule parser written in python, a work in progress. The main goal for this code is to validate snort rules and have them parsed into a workable dictionary object.
 
-The parser class accepts a snort rule as input and returnes a dictionary that containes the parsed output.
+> This is a fork of snortparser by g-rd. The original repo can be found at https://github.com/g-rd/snortparser.
 
-#> from snortparser import Parser
+Snort rule parser written in python. The main goal for this library is to validate snort rules and have them parsed into a workable dictionary object. A interactive python notebook can be found [here](example.ipynb).
 
-#> rule = ('alert tcp $HOME_NET any -> !$EXTERNAL_NET any (msg:\"MALWARE-BACKDOOR - Dagger_1.4.0\"; flow:to_client,established; content:\"2|00 00 00 06 00 00 00|Drives|24 00|\"; depth:16; metadata:ruleset community; classtype:misc-activity; sid:105; rev:14;)')
-#> parsed = Parser(rule)
+The parser class accepts a snort rule as input and returns a dictionary that contains the parsed output.
 
-"Header"
-#> print parsed.header
+```python
+from snortparser import Parser
 
-OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', (True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), ('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
+# define a snort rule
+rule = ('alert tcp $HOME_NET any -> !$EXTERNAL_NET any (msg:\"MALWARE-BACKDOOR - Dagger_1.4.0\"; flow:to_client,established; content:\"2|00 00 00 06 00 00 00|Drives|24 00|\"; depth:16; metadata:ruleset community; classtype:misc-activity; sid:105; rev:14;)')
 
-"Options"
-#> print parsed.options
+# parse the rule
+parsed = Parser(rule)
 
-OrderedDict([(0, {'msg': ['"MALWARE-BACKDOOR - Dagger_1.4.0"']}), (1, {'flow': ['to_client', 'established']}), (2, {'content': ['"2|00 00 00 06 00 00 00|Drives|24 00|"']}), (3, {'depth': ['16']}), (4, {'metadata': ['ruleset community']}), (5, {'classtype': ['misc-activity']}), (6, {'sid': ['105']}), (7, {'rev': ['14']})])
+# print the parsed rule
+print(parsed.header)
+print(parsed.options)
+```
 
-NOTE: if the parser is unable to parse the rule, it will return a ValueError with the invalid rule item. Additionally, it does not care about misplaced spaces in the headers ip and port definitions like: "  alert tcp ![ 127.0.0.1, !8.8.8.8 ]  any --> ". This i by design, since I am not sure if snort cares about header syntax that much.
-
-Also, keep in mind, that I have never used snort myself, nor do I know what the best practices are, this tool is written for a project and entierly based on snort documentatin.
-
-
-I hope this code is useful for someone.
-
-Cheers!
+**NOTE**: If the parser is unable to parse the rule, it will return a `ValueError` with the invalid rule item. Additionally, it does not care about misplaced spaces in the headers ip and port definitions like: " alert tcp ![ 127.0.0.1, !8.8.8.8 ] any --> ". This is by design, since I am not sure if snort cares about header syntax that much.
