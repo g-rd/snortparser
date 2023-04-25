@@ -401,7 +401,7 @@ class Parser(object):
                 option = option_string.split(":", 1)
                 key, value = option
                 if key != "pcre":
-                    value = value.split(",")
+                    value = [self.remove_leading_spaces(x) for x in value.split(",")]
                 options_dict[index] = (key, value)
             else:
                 options_dict[index] = (option_string, "")
